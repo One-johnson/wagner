@@ -9,7 +9,9 @@ export const list = query({
     await requireAdmin(ctx, args.sessionToken);
     const tools = await ctx.db.query("tools").collect();
     const categories = await ctx.db.query("toolCategories").collect();
-    const categoryMap = new Map(categories.map((c) => [c._id, c.name]));
+    const categoryMap = new Map(
+      categories.map((c) => [String(c._id), c.name] as const)
+    );
 
     const rows = await Promise.all(
       tools.map(async (tool) => ({
@@ -20,7 +22,9 @@ export const list = query({
         photoId: tool.photoId ?? null,
         photoUrl: tool.photoId ? await ctx.storage.getUrl(tool.photoId) : null,
         categoryId: tool.categoryId ?? null,
-        categoryName: tool.categoryId ? categoryMap.get(tool.categoryId) ?? null : null,
+        categoryName: tool.categoryId
+          ? (categoryMap.get(String(tool.categoryId)) ?? null)
+          : null,
         status: tool.status,
         conditionNotes: tool.conditionNotes ?? null,
         createdAt: tool.createdAt,

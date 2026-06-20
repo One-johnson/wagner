@@ -18,6 +18,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TablePhotoCell } from "@/components/ui/table-photo-cell";
 import { getFriendlyErrorMessage } from "@/lib/friendly-errors";
 
 export function TechniciansPanel() {
@@ -49,6 +50,15 @@ export function TechniciansPanel() {
   }
 
   const columns: ColumnDef<TechnicianRow>[] = [
+    {
+      id: "photo",
+      header: "Photo",
+      cell: ({ row }) => (
+        <TablePhotoCell url={row.original.photoUrl} alt={row.original.name} />
+      ),
+      meta: { label: "Photo" },
+      enableSorting: false,
+    },
     {
       accessorKey: "employeeCode",
       header: ({ column }) => (

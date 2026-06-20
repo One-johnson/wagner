@@ -36,7 +36,6 @@ export function DatePicker({
       <PopoverTrigger
         id={id}
         disabled={disabled}
-        nativeButton={false}
         render={
           <Button
             variant="outline"
