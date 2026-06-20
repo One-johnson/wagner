@@ -15,6 +15,10 @@ import { TechniciansCsvImportDialog } from "@/components/admin/csv-import-dialog
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import {
+  MobileRecordCard,
+  MobileRecordList,
+} from "@/components/data-table/mobile-record-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -63,6 +67,9 @@ export function TechniciansPanel() {
       accessorKey: "employeeCode",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Employee code" />
+      ),
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">{row.original.employeeCode}</span>
       ),
       meta: { label: "Employee code" },
     },
@@ -134,6 +141,67 @@ export function TechniciansPanel() {
         filterPlaceholder="Search technicians…"
         isLoading={technicians === undefined}
         emptyMessage="No technicians found. Add your first technician to get started."
+        renderMobileBody={({ table }) => {
+          const rows = table.getRowModel().rows;
+          if (technicians === undefined) {
+            return <MobileRecordList isLoading />;
+          }
+          if (!rows.length) {
+            return (
+              <MobileRecordList emptyMessage="No technicians found. Add your first technician to get started." />
+            );
+          }
+          return (
+            <MobileRecordList>
+              {rows.map((row) => {
+                const tech = row.original;
+                return (
+                  <MobileRecordCard
+                    key={row.id}
+                    onClick={() => setEditingTechnician(tech)}
+                    actions={
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingTechnician(tech);
+                          }}
+                          aria-label={`Edit ${tech.name}`}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingTechnician(tech);
+                          }}
+                          aria-label={`Delete ${tech.name}`}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </>
+                    }
+                  >
+                    <TablePhotoCell url={tech.photoUrl} alt={tech.name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{tech.name}</p>
+                      <p className="truncate font-mono text-xs text-muted-foreground">
+                        {tech.employeeCode}
+                      </p>
+                    </div>
+                    <Badge variant={tech.isActive ? "secondary" : "outline"}>
+                      {tech.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </MobileRecordCard>
+                );
+              })}
+            </MobileRecordList>
+          );
+        }}
       />
 
       <TechnicianFormDialog open={addOpen} onOpenChange={setAddOpen} />

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronsUpDown, HelpCircle, LogOut, User, Wrench } from "lucide-react";
+import { ChevronsUpDown, HelpCircle, LogOut, User } from "lucide-react";
+import { WagnerLogo } from "@/components/branding/wagner-logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,13 +66,11 @@ export function AdminAppSidebar({ user }: { user: AdminUser }) {
               data-tour="sidebar-brand"
               render={<Link href="/admin/dashboard" />}
             >
-              <div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Wrench className="size-4" />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Wagner Tools</span>
+              <WagnerLogo size="sm" className="group-data-[collapsible=icon]:px-1" />
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                <span className="truncate font-semibold">Wagner</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  Vehicle Management
+                  Tool Management
                 </span>
               </div>
             </SidebarMenuButton>

@@ -119,4 +119,24 @@
   body {
     @apply bg-background text-foreground;
   }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .touch-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
 }

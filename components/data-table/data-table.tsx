@@ -16,7 +16,9 @@ import {
   type Table as TanstackTable,
   type VisibilityState,
 } from "@tanstack/react-table";
+import { useIsCompact } from "@/hooks/use-is-compact";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -94,6 +96,8 @@ function DataTableInner<TData, TValue>({
   renderMobileBody,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
+  const isCompact = useIsCompact();
+  const useCardLayout = isCompact && !!renderMobileBody;
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -150,7 +154,7 @@ function DataTableInner<TData, TValue>({
         {renderToolbarActions?.(table)}
         {toolbarChildren}
       </DataTableToolbar>
-      {isMobile && renderMobileBody ? (
+      {useCardLayout ? (
         <div
           className={
             selectedCount > 0
@@ -194,7 +198,10 @@ function DataTableInner<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className={onRowClick ? "cursor-pointer" : undefined}
+                    className={cn(
+                      "transition-colors hover:bg-muted/40",
+                      onRowClick && "cursor-pointer"
+                    )}
                     onClick={
                       onRowClick
                         ? () => onRowClick(row.original)

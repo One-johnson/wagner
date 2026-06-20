@@ -12,6 +12,10 @@ import { CheckoutDialog } from "@/components/admin/checkout-dialog";
 import { ReturnToolDialog } from "@/components/admin/return-tool-dialog";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import {
+  MobileRecordCard,
+  MobileRecordList,
+} from "@/components/data-table/mobile-record-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -40,6 +44,9 @@ export function CheckoutsPanel() {
     {
       accessorKey: "assetTag",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Asset tag" />,
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">{row.original.assetTag}</span>
+      ),
       meta: { label: "Asset tag" },
     },
     {
@@ -110,6 +117,62 @@ export function CheckoutsPanel() {
         filterPlaceholder="Search active checkouts…"
         isLoading={checkouts === undefined}
         emptyMessage="No tools currently checked out. Use Check out tool to record one."
+        renderMobileBody={({ table }) => {
+          const rows = table.getRowModel().rows;
+          if (checkouts === undefined) {
+            return <MobileRecordList isLoading />;
+          }
+          if (!rows.length) {
+            return (
+              <MobileRecordList emptyMessage="No tools currently checked out. Use Check out tool to record one." />
+            );
+          }
+          return (
+            <MobileRecordList>
+              {rows.map((row) => {
+                const checkout = row.original;
+                return (
+                  <MobileRecordCard
+                    key={row.id}
+                    actions={
+                      <Button
+                        size="sm"
+                        onClick={() => setReturningCheckout(checkout)}
+                      >
+                        <Package className="size-4" />
+                        Return
+                      </Button>
+                    }
+                  >
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-primary/10 text-primary">
+                      <Package className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{checkout.toolName}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        <span className="font-mono">{checkout.assetTag}</span>
+                        {" · "}
+                        {checkout.technicianName}
+                      </p>
+                      {checkout.dueAt ? (
+                        <p
+                          className={
+                            checkout.isOverdue
+                              ? "mt-0.5 text-xs font-medium text-destructive"
+                              : "mt-0.5 text-xs text-muted-foreground"
+                          }
+                        >
+                          Due {new Date(checkout.dueAt).toLocaleDateString()}
+                          {checkout.isOverdue ? " · Overdue" : ""}
+                        </p>
+                      ) : null}
+                    </div>
+                  </MobileRecordCard>
+                );
+              })}
+            </MobileRecordList>
+          );
+        }}
         />
       </div>
 

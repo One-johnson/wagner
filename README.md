@@ -64,3 +64,19 @@ Copy `.env.example` to `.env.local`:
 
 1. `npx convex deploy` — production Convex backend
 2. Deploy Next.js to Vercel with `NEXT_PUBLIC_CONVEX_URL` set
+
+## PWA (install on desktop / phone)
+
+The app is a Progressive Web App. In **production** (`npm run build && npm start`):
+
+- **Chrome / Edge (desktop):** open the site → install icon in the address bar, or use the in-app **Install Wagner Tools** prompt
+- **Android:** Chrome menu → **Install app** or **Add to Home screen**
+- **iPhone / iPad:** Safari → Share → **Add to Home Screen**
+
+Offline behavior:
+
+- The app shell, login page, and offline page are cached
+- Live inventory data still requires internet (Convex backend)
+- When offline, a banner appears and cached pages may load; data syncs when you reconnect
+
+PWA is disabled during `npm run dev` so development is not affected by caching.
