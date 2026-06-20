@@ -17,6 +17,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TablePhotoCell } from "@/components/ui/table-photo-cell";
 import { getFriendlyErrorMessage } from "@/lib/friendly-errors";
 
 export type ToolRow = {
@@ -71,6 +72,15 @@ export function ToolsPanel() {
 
   const columns: ColumnDef<ToolRow>[] = [
     {
+      id: "photo",
+      header: "Photo",
+      cell: ({ row }) => (
+        <TablePhotoCell url={row.original.photoUrl} alt={row.original.name} />
+      ),
+      meta: { label: "Photo" },
+      enableSorting: false,
+    },
+    {
       accessorKey: "assetTag",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Asset tag" />,
       meta: { label: "Asset tag" },
@@ -81,9 +91,21 @@ export function ToolsPanel() {
       meta: { label: "Name" },
     },
     {
-      accessorKey: "categoryName",
+      id: "category",
+      accessorFn: (row) =>
+        row.categoryName ??
+        (row.categoryId
+          ? (categories?.find((c) => c._id === row.categoryId)?.name ?? "")
+          : ""),
       header: "Category",
-      cell: ({ row }) => row.original.categoryName ?? "—",
+      cell: ({ row }) => {
+        const name =
+          row.original.categoryName ??
+          (row.original.categoryId
+            ? categories?.find((c) => c._id === row.original.categoryId)?.name
+            : null);
+        return name ?? "—";
+      },
       meta: { label: "Category" },
     },
     {

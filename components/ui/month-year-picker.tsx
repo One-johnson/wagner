@@ -68,7 +68,6 @@ export function MonthYearPicker({
       <PopoverTrigger
         id={id}
         disabled={disabled}
-        nativeButton={false}
         render={
           <Button
             variant="outline"
@@ -92,6 +91,10 @@ export function MonthYearPicker({
               onValueChange={(year) =>
                 setDraft((prev) => ({ ...prev, year: Number(year) }))
               }
+              items={years.map((year) => ({
+                value: String(year),
+                label: String(year),
+              }))}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -112,6 +115,10 @@ export function MonthYearPicker({
               onValueChange={(month) =>
                 setDraft((prev) => ({ ...prev, month: Number(month) }))
               }
+              items={MONTH_LABELS.map((label, index) => ({
+                value: String(index),
+                label,
+              }))}
             >
               <SelectTrigger>
                 <SelectValue />

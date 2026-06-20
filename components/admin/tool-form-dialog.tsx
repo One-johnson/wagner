@@ -28,6 +28,18 @@ import {
 import { getFriendlyErrorMessage } from "@/lib/friendly-errors";
 import type { ToolRow } from "@/components/admin/tools-panel";
 
+const TOOL_STATUS_OPTIONS = [
+  "available",
+  "checked_out",
+  "maintenance",
+  "lost",
+  "retired",
+] as const;
+
+function formatToolStatus(status: string) {
+  return status.replace("_", " ");
+}
+
 export function ToolFormDialog({
   tool,
   categories,
@@ -104,8 +116,8 @@ export function ToolFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90dvh] flex-col overflow-hidden sm:max-w-md">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{tool ? "Edit tool" : "Add tool"}</DialogTitle>
           <DialogDescription>
             {tool
@@ -113,87 +125,102 @@ export function ToolFormDialog({
               : "Register a new tool in the inventory."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <PhotoUpload
-            label="Tool photo"
-            value={photoId ?? null}
-            previewUrl={photoPreview ?? null}
-            onChange={(id, preview) => {
-              setPhotoId(id);
-              setPhotoPreview(preview);
-            }}
-            disabled={loading}
-          />
-          <div className="space-y-2">
-            <Label htmlFor="tool-name">Name</Label>
-            <Input
-              id="tool-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+        <form
+          onSubmit={(e) => void handleSubmit(e)}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+            <PhotoUpload
+              label="Tool photo"
+              value={photoId ?? null}
+              previewUrl={photoPreview ?? null}
+              onChange={(id, preview) => {
+                setPhotoId(id);
+                setPhotoPreview(preview);
+              }}
+              disabled={loading}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tool-asset-tag">Asset tag</Label>
-            <Input
-              id="tool-asset-tag"
-              value={assetTag}
-              onChange={(e) => setAssetTag(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tool-barcode">Barcode (optional)</Label>
-            <Input
-              id="tool-barcode"
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c._id} value={c._id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {tool ? (
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label htmlFor="tool-name">Name</Label>
+              <Input
+                id="tool-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tool-asset-tag">Asset tag</Label>
+              <Input
+                id="tool-asset-tag"
+                value={assetTag}
+                onChange={(e) => setAssetTag(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tool-barcode">Barcode (optional)</Label>
+              <Input
+                id="tool-barcode"
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
               <Select
-                value={status}
-                onValueChange={(v) => setStatus((v ?? "available") as ToolRow["status"])}
+                value={categoryId}
+                onValueChange={(v) => setCategoryId(v ?? "")}
+                items={categories.map((c) => ({ value: c._id, label: c.name }))}
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {["available", "checked_out", "maintenance", "lost", "retired"].map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s.replace("_", " ")}
+                  {categories.map((c) => (
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          ) : null}
-          <div className="space-y-2">
-            <Label htmlFor="tool-notes">Condition notes</Label>
-            <Input
-              id="tool-notes"
-              value={conditionNotes}
-              onChange={(e) => setConditionNotes(e.target.value)}
-            />
+            {tool ? (
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={status}
+                  onValueChange={(v) =>
+                    setStatus((v ?? "available") as ToolRow["status"])
+                  }
+                  items={TOOL_STATUS_OPTIONS.map((s) => ({
+                    value: s,
+                    label: formatToolStatus(s),
+                  }))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TOOL_STATUS_OPTIONS.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {formatToolStatus(s)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+            <div className="space-y-2">
+              <Label htmlFor="tool-notes">Condition notes</Label>
+              <Input
+                id="tool-notes"
+                value={conditionNotes}
+                onChange={(e) => setConditionNotes(e.target.value)}
+              />
+            </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
