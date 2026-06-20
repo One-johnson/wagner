@@ -10,6 +10,10 @@ import { useAdminSession } from "@/components/auth/session-provider";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import {
+  MobileRecordCard,
+  MobileRecordList,
+} from "@/components/data-table/mobile-record-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MonthYearPicker } from "@/components/ui/month-year-picker";
@@ -135,8 +139,8 @@ export function TransactionsPanel() {
           </Button>
         }
       />
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="space-y-2">
+      <div className="grid gap-4 sm:flex sm:flex-wrap sm:items-end">
+        <div className="w-full space-y-2 sm:w-auto">
           <Label htmlFor="from">From month</Label>
           <MonthYearPicker
             id="from"
@@ -144,9 +148,10 @@ export function TransactionsPanel() {
             onChange={setFromMonthYear}
             placeholder="Start month"
             maxMonthYear={toMonthYear}
+            className="w-full"
           />
         </div>
-        <div className="space-y-2">
+        <div className="w-full space-y-2 sm:w-auto">
           <Label htmlFor="to">To month</Label>
           <MonthYearPicker
             id="to"
@@ -154,6 +159,7 @@ export function TransactionsPanel() {
             onChange={setToMonthYear}
             placeholder="End month"
             minMonthYear={fromMonthYear}
+            className="w-full"
           />
         </div>
         <Button
@@ -177,6 +183,43 @@ export function TransactionsPanel() {
         filterPlaceholder="Search transactions…"
         isLoading={transactions === undefined}
         emptyMessage="No transactions found."
+        renderMobileBody={({ table }) => {
+          const rows = table.getRowModel().rows;
+          if (transactions === undefined) {
+            return <MobileRecordList isLoading />;
+          }
+          if (!rows.length) {
+            return <MobileRecordList emptyMessage="No transactions found." />;
+          }
+          return (
+            <MobileRecordList>
+              {rows.map((row) => {
+                const tx = row.original;
+                return (
+                  <MobileRecordCard key={row.id}>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate font-medium">{tx.toolName}</p>
+                        <Badge
+                          variant={tx.type === "checkout" ? "default" : "secondary"}
+                          className="shrink-0"
+                        >
+                          {tx.type}
+                        </Badge>
+                      </div>
+                      <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
+                        {tx.assetTag}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-muted-foreground">
+                        {tx.technicianName} · {new Date(tx.occurredAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </MobileRecordCard>
+                );
+              })}
+            </MobileRecordList>
+          );
+        }}
         />
       </div>
     </div>

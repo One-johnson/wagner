@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { SetupPageClient } from "./setup-client";
 
 export const metadata = {
@@ -13,18 +7,19 @@ export const metadata = {
 
 export default function SetupPage() {
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted/40 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>System setup</CardTitle>
-          <CardDescription>
-            Initialize Wagner Tool Management with an admin account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SetupPageClient />
-        </CardContent>
-      </Card>
-    </div>
+    <AuthShell
+      title="System setup"
+      description="Create the first administrator account to get started."
+      footer={
+        <p className="text-center text-sm text-muted-foreground">
+          Already set up?{" "}
+          <a href="/login" className="font-medium text-primary hover:underline">
+            Sign in
+          </a>
+        </p>
+      }
+    >
+      <SetupPageClient />
+    </AuthShell>
   );
 }

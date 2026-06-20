@@ -95,8 +95,8 @@ export function TechnicianFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90dvh] flex-col overflow-hidden sm:max-w-md">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{technician ? "Edit technician" : "Add technician"}</DialogTitle>
           <DialogDescription>
             {technician
@@ -104,53 +104,58 @@ export function TechnicianFormDialog({
               : "Register a workshop technician who can borrow tools."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <PhotoUpload
-            label="Photo"
-            optional
-            value={photoId ?? null}
-            previewUrl={photoPreview ?? null}
-            onChange={(id, preview) => {
-              setPhotoId(id);
-              setPhotoPreview(preview);
-            }}
-            disabled={loading}
-          />
-          <div className="space-y-2">
-            <Label htmlFor="tech-name">Name</Label>
-            <Input
-              id="tech-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+        <form
+          onSubmit={(e) => void handleSubmit(e)}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+            <PhotoUpload
+              label="Photo"
+              optional
+              value={photoId ?? null}
+              previewUrl={photoPreview ?? null}
+              onChange={(id, preview) => {
+                setPhotoId(id);
+                setPhotoPreview(preview);
+              }}
+              disabled={loading}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tech-code">Employee ID</Label>
-            <Input
-              id="tech-code"
-              value={employeeCode}
-              readOnly
-              className="bg-muted/50 font-mono tracking-widest"
-              placeholder={technician ? undefined : "Generating…"}
-            />
-            {!technician ? (
-              <p className="text-xs text-muted-foreground">
-                A unique 5-digit ID is assigned automatically.
-              </p>
+            <div className="space-y-2">
+              <Label htmlFor="tech-name">Name</Label>
+              <Input
+                id="tech-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tech-code">Employee ID</Label>
+              <Input
+                id="tech-code"
+                value={employeeCode}
+                readOnly
+                className="bg-muted/50 font-mono tracking-widest"
+                placeholder={technician ? undefined : "Generating…"}
+              />
+              {!technician ? (
+                <p className="text-xs text-muted-foreground">
+                  A unique 5-digit ID is assigned automatically.
+                </p>
+              ) : null}
+            </div>
+            {technician ? (
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                />
+                Active
+              </label>
             ) : null}
           </div>
-          {technician ? (
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-              />
-              Active
-            </label>
-          ) : null}
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>

@@ -14,6 +14,10 @@ import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { FadeInView } from "@/components/motion";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import {
+  MobileRecordCard,
+  MobileRecordList,
+} from "@/components/data-table/mobile-record-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -40,6 +44,20 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
   lost: "destructive",
   retired: "outline",
 };
+
+function formatStatus(status: string) {
+  return status.replace("_", " ");
+}
+
+function resolveCategoryName(
+  tool: ToolRow,
+  categories?: { _id: Id<"toolCategories">; name: string }[]
+) {
+  return (
+    tool.categoryName ??
+    (tool.categoryId ? categories?.find((c) => c._id === tool.categoryId)?.name : null)
+  );
+}
 
 export function ToolsPanel() {
   const { sessionToken } = useAdminSession();
@@ -83,6 +101,9 @@ export function ToolsPanel() {
     {
       accessorKey: "assetTag",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Asset tag" />,
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">{row.original.assetTag}</span>
+      ),
       meta: { label: "Asset tag" },
     },
     {
@@ -99,11 +120,7 @@ export function ToolsPanel() {
           : ""),
       header: "Category",
       cell: ({ row }) => {
-        const name =
-          row.original.categoryName ??
-          (row.original.categoryId
-            ? categories?.find((c) => c._id === row.original.categoryId)?.name
-            : null);
+        const name = resolveCategoryName(row.original, categories);
         return name ?? "—";
       },
       meta: { label: "Category" },
@@ -113,7 +130,7 @@ export function ToolsPanel() {
       header: "Status",
       cell: ({ row }) => (
         <Badge variant={STATUS_VARIANT[row.original.status] ?? "outline"}>
-          {row.original.status.replace("_", " ")}
+          {formatStatus(row.original.status)}
         </Badge>
       ),
       meta: { label: "Status" },
@@ -176,6 +193,69 @@ export function ToolsPanel() {
         filterPlaceholder="Search tools…"
         isLoading={tools === undefined}
         emptyMessage="No tools found. Add your first tool to get started."
+        renderMobileBody={({ table }) => {
+          const rows = table.getRowModel().rows;
+          if (tools === undefined) {
+            return <MobileRecordList isLoading />;
+          }
+          if (!rows.length) {
+            return (
+              <MobileRecordList emptyMessage="No tools found. Add your first tool to get started." />
+            );
+          }
+          return (
+            <MobileRecordList>
+              {rows.map((row) => {
+                const tool = row.original;
+                const categoryName = resolveCategoryName(tool, categories);
+                return (
+                  <MobileRecordCard
+                    key={row.id}
+                    onClick={() => setEditingTool(tool)}
+                    actions={
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingTool(tool);
+                          }}
+                          aria-label={`Edit ${tool.name}`}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingTool(tool);
+                          }}
+                          aria-label={`Delete ${tool.name}`}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </>
+                    }
+                  >
+                    <TablePhotoCell url={tool.photoUrl} alt={tool.name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{tool.name}</p>
+                      <p className="truncate font-mono text-xs text-muted-foreground">
+                        {tool.assetTag}
+                        {categoryName ? ` · ${categoryName}` : ""}
+                      </p>
+                    </div>
+                    <Badge variant={STATUS_VARIANT[tool.status] ?? "outline"}>
+                      {formatStatus(tool.status)}
+                    </Badge>
+                  </MobileRecordCard>
+                );
+              })}
+            </MobileRecordList>
+          );
+        }}
         />
       </FadeInView>
 
