@@ -4,22 +4,13 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { PwaInstallPrompt } from "@/components/pwa/pwa-install-prompt";
 import { OfflineBanner } from "@/components/pwa/offline-banner";
+import { PwaUpdateBanner } from "@/components/pwa/pwa-update-banner";
+import { useServiceWorkerUpdate } from "@/components/pwa/use-service-worker-update";
 
 export function PwaProvider({ children }: { children: ReactNode }) {
   const [isOnline, setIsOnline] = useState(true);
   const [wasOffline, setWasOffline] = useState(false);
-
-  useEffect(() => {
-    if (!("serviceWorker" in navigator)) return;
-
-    if (process.env.NODE_ENV === "production") {
-      void navigator.serviceWorker
-        .register("/sw.js")
-        .catch(() => {
-          // Registration can fail on unsupported contexts; app still works online.
-        });
-    }
-  }, []);
+  const { updateAvailable, applyUpdate } = useServiceWorkerUpdate();
 
   useEffect(() => {
     const updateStatus = () => {
@@ -46,6 +37,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
   return (
     <>
       {!isOnline ? <OfflineBanner /> : null}
+      {updateAvailable ? <PwaUpdateBanner onRefresh={applyUpdate} /> : null}
       {children}
       <PwaInstallPrompt />
     </>

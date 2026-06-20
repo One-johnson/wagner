@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { AuthField, authInputClassName } from "@/components/auth/auth-field";
+import { AuthSuccessBanner } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -12,7 +16,9 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useAdminSession } from "@/components/auth/session-provider";
 import { parseJsonResponse } from "@/lib/http/parse-json-response";
 import { getFriendlyAuthErrorMessage } from "@/lib/friendly-errors";
+import { loginSchema, type LoginValues } from "@/lib/auth/schemas";
 import type { AdminUser } from "@/lib/auth/types";
+import { cn } from "@/lib/utils";
 
 const REMEMBER_ME_STORAGE_KEY = "wagner_remember_me";
 
@@ -22,30 +28,39 @@ export function LoginForm() {
   const { setSession } = useAdminSession();
   const setupComplete = searchParams.get("setup") === "1";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: true,
+    },
+  });
+
+  const rememberMe = watch("rememberMe");
 
   useEffect(() => {
     const stored = localStorage.getItem(REMEMBER_ME_STORAGE_KEY);
     if (stored !== null) {
-      setRememberMe(stored === "true");
+      setValue("rememberMe", stored === "true");
     }
-  }, []);
+  }, [setValue]);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-
+  async function onSubmit(values: LoginValues) {
     try {
-      localStorage.setItem(REMEMBER_ME_STORAGE_KEY, String(rememberMe));
+      localStorage.setItem(REMEMBER_ME_STORAGE_KEY, String(values.rememberMe));
 
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password, rememberMe }),
+        body: JSON.stringify(values),
       });
       const data = await parseJsonResponse<{
         error?: string;
@@ -67,71 +82,82 @@ export function LoginForm() {
       router.refresh();
     } catch {
       toast.error("We couldn't reach the server. Check your connection and try again.");
-    } finally {
-      setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form
+      onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+      className="space-y-4"
+      noValidate
+    >
       {setupComplete ? (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm">
-          <p className="font-medium text-primary">Account created</p>
-          <p className="mt-1 text-muted-foreground">
-            Sign in with the password you just set.
-          </p>
-        </div>
+        <AuthSuccessBanner
+          title="You're all set"
+          description="Your administrator account was created. Sign in with the email and password you just set."
+        />
       ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="email"
-            type="email"
-            autoComplete="username"
-            placeholder="admin@wagner.com"
-            className="pl-9"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-      </div>
+      <AuthField
+        id="email"
+        label="Email"
+        icon={Mail}
+        error={errors.email?.message}
+      >
+        <Input
+          id="email"
+          type="email"
+          autoComplete="username"
+          autoFocus
+          placeholder="admin@wagner.com"
+          className={authInputClassName(true, !!errors.email)}
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? "email-error" : undefined}
+          {...register("email")}
+        />
+      </AuthField>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-          <PasswordInput
-            id="password"
-            autoComplete="current-password"
-            placeholder="Enter your password"
-            className="pl-9"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-      </div>
+      <AuthField
+        id="password"
+        label="Password"
+        icon={Lock}
+        error={errors.password?.message}
+      >
+        <PasswordInput
+          id="password"
+          autoComplete="current-password"
+          placeholder="Enter your password"
+          className={authInputClassName(true, !!errors.password)}
+          aria-invalid={!!errors.password}
+          {...register("password")}
+        />
+      </AuthField>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         <Checkbox
           id="remember-me"
           checked={rememberMe}
-          onCheckedChange={(checked) => setRememberMe(checked === true)}
+          onCheckedChange={(checked) => setValue("rememberMe", checked === true)}
         />
-        <Label
-          htmlFor="remember-me"
-          className="cursor-pointer text-sm font-normal text-muted-foreground"
-        >
-          Remember me for 30 days
-        </Label>
+        <div className="space-y-0.5">
+          <Label
+            htmlFor="remember-me"
+            className="cursor-pointer text-sm font-normal leading-none"
+          >
+            Remember me for 30 days
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Stay signed in on this device.
+          </p>
+        </div>
       </div>
 
-      <Button type="submit" className="h-11 w-full" disabled={loading}>
-        {loading ? "Signing in…" : "Sign in"}
+      <Button
+        type="submit"
+        className={cn("h-11 w-full", isSubmitting && "opacity-90")}
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? "Signing you in…" : "Sign in"}
       </Button>
     </form>
   );
