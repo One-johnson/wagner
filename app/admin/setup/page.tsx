@@ -1,22 +1,26 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { AuthFormFooter } from "@/components/auth/auth-form-footer";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { SetupPageClient } from "./setup-client";
 
-export const metadata = {
-  title: "Setup",
+export const metadata: Metadata = {
+  title: "Create account",
+  robots: { index: false, follow: false },
 };
 
 export default function SetupPage() {
   return (
     <AuthShell
-      title="System setup"
-      description="Create the first administrator account to get started."
+      title="Create administrator account"
+      description="One-time setup for Wagner Tool Management."
       footer={
-        <p className="text-center text-sm text-muted-foreground">
+        <AuthFormFooter>
           Already set up?{" "}
-          <a href="/login" className="font-medium text-primary hover:underline">
+          <Link href="/login" className="font-medium text-primary hover:underline">
             Sign in
-          </a>
-        </p>
+          </Link>
+        </AuthFormFooter>
       }
     >
       <SetupPageClient />

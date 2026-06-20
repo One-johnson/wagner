@@ -1,9 +1,13 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
+import { AuthFormFooter } from "@/components/auth/auth-form-footer";
 import { AuthShell } from "@/components/auth/auth-shell";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Sign in",
+  robots: { index: false, follow: false },
 };
 
 export default function LoginPage() {
@@ -12,12 +16,12 @@ export default function LoginPage() {
       title="Admin sign in"
       description="Sign in to manage tools, technicians, and check-outs."
       footer={
-        <p className="text-center text-sm text-muted-foreground">
-          First time?{" "}
-          <a href="/admin/setup" className="font-medium text-primary hover:underline">
-            Set up the system
-          </a>
-        </p>
+        <AuthFormFooter>
+          First time here?{" "}
+          <Link href="/admin/setup" className="font-medium text-primary hover:underline">
+            Create administrator account
+          </Link>
+        </AuthFormFooter>
       }
     >
       <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>

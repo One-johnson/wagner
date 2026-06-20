@@ -6,19 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-export function PasswordInput({
-  className,
-  containerClassName,
-  ...props
-}: React.ComponentProps<typeof Input> & {
-  containerClassName?: string;
-}) {
+export const PasswordInput = React.forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<typeof Input> & {
+    containerClassName?: string;
+  }
+>(function PasswordInput({ className, containerClassName, ...props }, ref) {
   const [visible, setVisible] = React.useState(false);
 
   return (
     <div className={cn("relative", containerClassName)}>
       <Input
         {...props}
+        ref={ref}
         type={visible ? "text" : "password"}
         className={cn("pr-10", className)}
       />
@@ -35,4 +35,4 @@ export function PasswordInput({
       </Button>
     </div>
   );
-}
+});
